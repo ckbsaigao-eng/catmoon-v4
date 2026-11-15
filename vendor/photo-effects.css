@@ -1,0 +1,123 @@
+/* 独立照片效果。pe- 前缀用于避免与宿主网站的样式冲突。 */
+.pe-gallery {
+  --pe-paper: #fffcef;
+  --pe-ink: #747568;
+  --pe-ease: cubic-bezier(.32, .72, 0, 1);
+  --pe-hover-time: 480ms;
+}
+.pe-item { position: relative; transform-origin: 50% 55%; }
+.pe-motion { display: block; }
+.pe-card {
+  display: block; position: relative; width: 100%; padding: 0;
+  border: 0; background: transparent; color: inherit; font: inherit;
+  text-align: left; cursor: pointer; touch-action: manipulation;
+  transform-origin: 50% 55%;
+  transition: transform var(--pe-hover-time) var(--pe-ease);
+}
+.pe-card:focus-visible { outline: 2px solid #758a75; outline-offset: 8px; }
+.pe-surface {
+  display: block; position: relative; padding: 10px 10px 36px;
+  background: var(--pe-paper); box-shadow: 0 1px 2px #3a332b24, 3px 9px 16px -9px #3a332b58;
+}
+.pe-surface::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  box-shadow: 3px 12px 22px #38362d25; opacity: 0;
+  transition: opacity var(--pe-hover-time) var(--pe-ease);
+}
+.pe-surface img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
+.pe-caption {
+  position: absolute; bottom: 8px; left: 12px; right: 8px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font: italic 13px/1.5 Georgia, 'Songti SC', serif; color: var(--pe-ink);
+}
+.pe-whisper {
+  display: block; position: absolute; top: calc(100% + 12px); left: 0; right: 0;
+  color: var(--pe-ink); text-align: center; font: italic 12px/1.5 Georgia, serif;
+  pointer-events: none; opacity: 0;
+  transition: opacity var(--pe-hover-time) var(--pe-ease);
+}
+.pe-item:focus-within { z-index: 20 !important; }
+.pe-card:focus-visible .pe-whisper { opacity: 1; }
+.pe-cursor {
+  position: fixed; top: 0; left: 0; z-index: 10000; width: 35px; height: 35px;
+  border: 1px solid #575e51; border-radius: 50%; pointer-events: none;
+  display: none; align-items: center; justify-content: center;
+  font: italic 10px/1 Georgia, serif; color: #575e51; opacity: 0;
+  transition: opacity 160ms cubic-bezier(.23, 1, .32, 1);
+}
+.pe-cursor[data-visible=true] { opacity: 1; }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .pe-item:hover { z-index: 20 !important; }
+  .pe-card:hover { transform: translate3d(0, -3px, 0) rotate(var(--pe-counter-angle, 0deg)); }
+  .pe-card:hover .pe-surface::after, .pe-card:hover .pe-whisper { opacity: 1; }
+  .pe-gallery[data-pe-cursor=true] .pe-card { cursor: none; }
+  .pe-cursor { display: flex; }
+}
+/* 原生 dialog 提供模态语义、焦点限制和 Escape 行为。 */
+.pe-lightbox {
+  max-width: none; max-height: none; width: 100%; height: 100%;
+  padding: 36px 24px; margin: 0; border: 0; background: transparent; color: #eeeade;
+  overflow: auto; box-sizing: border-box; outline: none;
+  --pe-ease: cubic-bezier(.32, .72, 0, 1);
+}
+.pe-lightbox[open] { display: grid; place-items: center; }
+.pe-lightbox::backdrop { background: rgb(28 39 46 / 92%); }
+.pe-panel { width: min(100%, 1080px); position: relative; text-align: center; }
+.pe-large-image {
+  display: block; width: auto; height: auto; max-width: 100%; max-height: 76vh;
+  max-height: 76dvh; object-fit: contain; margin: auto; box-sizing: border-box;
+  border: 8px solid #f5f0e4; box-shadow: 2px 7px 30px #10181d4d;
+}
+.pe-lightbox-caption { margin: 16px 0 0; font: 14px/1.8 Georgia, 'Songti SC', serif; }
+.pe-close {
+  position: fixed; top: max(16px, env(safe-area-inset-top));
+  right: max(16px, env(safe-area-inset-right)); width: 44px; height: 44px;
+  border: 1px solid #ffffff50; border-radius: 50%; background: #29343d;
+  color: #eeeade; font: 28px/1 sans-serif; cursor: pointer; touch-action: manipulation;
+}
+.pe-close:focus-visible { outline: 2px solid #eeeade; outline-offset: 4px; }
+.pe-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+.pe-lightbox[data-pe-fallback=true][open] .pe-panel {
+  animation: pe-arrive 250ms cubic-bezier(.23, 1, .32, 1) both;
+}
+.pe-lightbox[data-pe-fallback=true][open]::backdrop {
+  animation: pe-fade 250ms cubic-bezier(.23, 1, .32, 1) both;
+}
+@keyframes pe-arrive { from { opacity: 0; transform: translate3d(0, 12px, 0); } to { opacity: 1; transform: none; } }
+@keyframes pe-fade { from { opacity: 0; } to { opacity: 1; } }
+/* 共享照片的快照由浏览器插值位置、大小和旋转。其他页面内容保持原样。 */
+html[data-pe-transfer]::view-transition-old(root),
+html[data-pe-transfer]::view-transition-new(root) { animation: none; }
+html[data-pe-transfer]::view-transition-group(pe-photograph) {
+  animation-duration: 720ms;
+  animation-duration: var(--pe-open-time, 720ms);
+  animation-timing-function: cubic-bezier(.32, .72, 0, 1);
+  z-index: 100;
+}
+html[data-pe-transfer=close]::view-transition-group(pe-photograph) {
+  animation-duration: 540ms;
+  animation-duration: var(--pe-close-time, 540ms);
+}
+html[data-pe-transfer]::view-transition-old(pe-photograph),
+html[data-pe-transfer]::view-transition-new(pe-photograph) {
+  mix-blend-mode: normal; object-fit: contain; width: 100%; height: 100%;
+}
+@media (max-width: 700px) {
+  .pe-surface { padding: 7px 7px 30px; }
+  .pe-whisper { display: none; }
+  .pe-lightbox { padding: 64px 16px 28px; }
+  .pe-large-image { border-width: 5px; max-height: 72vh; max-height: 72dvh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pe-card { transition: none; }
+  .pe-cursor { display: none; }
+  .pe-surface::after, .pe-whisper { transition-duration: 140ms; }
+  .pe-lightbox[data-pe-fallback=true][open] .pe-panel,
+  .pe-lightbox[data-pe-fallback=true][open]::backdrop { animation: pe-fade 140ms ease both; }
+  html[data-pe-transfer]::view-transition-group(pe-photograph),
+  html[data-pe-transfer]::view-transition-old(pe-photograph),
+  html[data-pe-transfer]::view-transition-new(pe-photograph) { animation: none; }
+}
