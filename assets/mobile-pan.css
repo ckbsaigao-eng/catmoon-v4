@@ -1,0 +1,16 @@
+@media (max-width: 650px) and (orientation: portrait) {
+  .journey .chapter-stage, .journey .chapter-pin {
+    width: max(100vw, 160dvh);
+    right: auto;
+    transform: translateX(var(--chapter-pan, 0px));
+  }
+  .journey .memory-content {
+    --memory-width: min(930px, 124.8dvh);
+    --photo-gap: clamp(28px, 5.6dvh, 60px);
+    --photo-base: min(275px, calc((var(--memory-width) - var(--photo-gap) - var(--photo-gap)) / 3), calc((100dvh - 285px) / 1.6));
+    width: calc(var(--photo-base) * var(--batch-size) + var(--photo-gap) * (var(--batch-size) - 1));
+  }
+  .journey .chapter-batch.count-1 { grid-template-columns: minmax(0, var(--photo-base)); }
+  .journey .chapter-batch.count-2 { grid-template-columns: repeat(2, minmax(0, var(--photo-base))); }
+  .journey .chapter-batch.count-3 { grid-template-columns: repeat(3, minmax(0, var(--photo-base))); }
+}
